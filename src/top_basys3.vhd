@@ -45,15 +45,82 @@ end top_basys3;
 architecture top_basys3_arch of top_basys3 is 
   
 	-- declare components and signals
+    component controller_fsm is
+        Port (
+            i_reset : in STD_LOGIC;
+            i_adv   : in STD_LOGIC;
+            o_cycle : out STD_LOGIC_VECTOR (3 downto 0)
+        );
+    end component;
+    
+    
 
+    component ALU is
+        Port (
+            i_A      : in STD_LOGIC_VECTOR (7 downto 0);
+            i_B      : in STD_LOGIC_VECTOR (7 downto 0);
+            i_op     : in STD_LOGIC_VECTOR (2 downto 0);
+            o_result : out STD_LOGIC_VECTOR (7 downto 0)
+        );
+    end component;
   
+  
+  signal w_cycle  : std_logic_vector(3 downto 0);
+    signal f_A      : std_logic_vector(7 downto 0) := (others => '0');
+    signal f_B      : std_logic_vector(7 downto 0) := (others => '0');
+    signal f_op     : std_logic_vector(2 downto 0) := (others => '0');
+    signal w_result : std_logic_vector(7 downto 0);
+    
+    
 begin
 	-- PORT MAPS ----------------------------------------
+    fsm_inst : controller_fsm
+        port map (
+            i_reset => btnU,
+            i_adv   => btnC,
+            o_cycle => w_cycle
+        );
+    alu_inst : ALU
+        port map (
+            i_A      => f_A,
+            i_B      => f_B,
+            i_op     => f_op,
+            o_result => w_result
+        );
+        
+      process(btnC, btnU)
+    begin
+        if btnU = '1' then
+            f_A  <= (others => '0');
+            f_B  <= (others => '0');
+            f_op <= (others => '0');
 
+        elsif rising_edge(btnC) then
+            case w_cycle is
+                when "0001" =>
+                    f_A <= sw;
+
+                when "0010" =>
+                    f_B <= sw;
+
+                when "0100" =>
+                    f_op <= sw(2 downto 0);
+
+                when others =>
+                    null;
+            end case;
+        end if;
+    end process;
 	
 	
 	-- CONCURRENT STATEMENTS ----------------------------
-	
+	led(7 downto 0)   <= w_result;
+    led(11 downto 8)  <= w_cycle;
+    led(15 downto 12) <= "0000";
+  
+    seg <= "1111111";
+    an  <= "1111";
+
 	
 	
 end top_basys3_arch;
