@@ -46,11 +46,12 @@ architecture top_basys3_arch of top_basys3 is
   
 	-- declare components and signals
     component controller_fsm is
-        Port (
-            i_reset : in STD_LOGIC;
-            i_adv   : in STD_LOGIC;
-            o_cycle : out STD_LOGIC_VECTOR (3 downto 0)
-        );
+    Port(
+        i_clk   : in STD_LOGIC;
+        i_reset : in STD_LOGIC;
+        i_adv   : in STD_LOGIC;
+        o_cycle : out STD_LOGIC_VECTOR (3 downto 0)
+    );
     end component;
     
     
@@ -66,20 +67,21 @@ architecture top_basys3_arch of top_basys3 is
   
   
   signal w_cycle  : std_logic_vector(3 downto 0);
-    signal f_A      : std_logic_vector(7 downto 0) := (others => '0');
-    signal f_B      : std_logic_vector(7 downto 0) := (others => '0');
-    signal f_op     : std_logic_vector(2 downto 0) := (others => '0');
+    signal f_A      : std_logic_vector(7 downto 0);
+    signal f_B      : std_logic_vector(7 downto 0);
+    signal f_op     : std_logic_vector(2 downto 0);
     signal w_result : std_logic_vector(7 downto 0);
     
     
 begin
 	-- PORT MAPS ----------------------------------------
     fsm_inst : controller_fsm
-        port map (
-            i_reset => btnU,
-            i_adv   => btnC,
-            o_cycle => w_cycle
-        );
+    port map (
+        i_clk   => clk,
+        i_reset => btnU,
+        i_adv   => btnC,
+        o_cycle => w_cycle
+    );
     alu_inst : ALU
         port map (
             i_A      => f_A,
@@ -88,28 +90,30 @@ begin
             o_result => w_result
         );
         
-      process(btnC, btnU)
+      process(clk, btnU)
     begin
         if btnU = '1' then
             f_A  <= (others => '0');
             f_B  <= (others => '0');
             f_op <= (others => '0');
 
-        elsif rising_edge(btnC) then
-            case w_cycle is
-                when "0001" =>
-                    f_A <= sw;
+       elsif rising_edge(clk) then
+    if btnC = '1' then
+        case w_cycle is
+            when "0001" =>
+                f_A <= sw;
 
-                when "0010" =>
-                    f_B <= sw;
+            when "0010" =>
+                f_B <= sw;
 
-                when "0100" =>
-                    f_op <= sw(2 downto 0);
+            when "0100" =>
+                f_op <= sw(2 downto 0);
 
-                when others =>
-                    null;
-            end case;
-        end if;
+            when others =>
+                null;
+        end case;
+    end if;
+end if;
     end process;
 	
 	

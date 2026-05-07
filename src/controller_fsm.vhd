@@ -31,48 +31,47 @@ use IEEE.STD_LOGIC_1164.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
+
 entity controller_fsm is
-    Port ( i_reset : in STD_LOGIC;
-           i_adv : in STD_LOGIC;
-           o_cycle : out STD_LOGIC_VECTOR (3 downto 0));
+    Port ( 
+        i_clk   : in  STD_LOGIC;
+        i_reset : in  STD_LOGIC;
+        i_adv   : in  STD_LOGIC;
+        o_cycle : out STD_LOGIC_VECTOR (3 downto 0)
+    );
 end controller_fsm;
 
 architecture FSM of controller_fsm is
-type state_type is (S0, S1, S2, S3);
-    signal r_state : state_type := S0;
+
+    type state_type is (S_CLEAR, S_OP1, S_OP2, S_RESULT);
+    signal r_state : state_type := S_CLEAR;
 
 begin
 
-    process(i_adv, i_reset)
+    process(i_clk, i_reset)
     begin
         if i_reset = '1' then
-            r_state <= S0;
-        elsif rising_edge(i_adv) then
-            case r_state is
-                when S0 =>
-                    r_state <= S1;
-                when S1 =>
-                    r_state <= S2;
-                when S2 =>
-                    r_state <= S3;
-                when S3 =>
-                    r_state <= S0;
-            end case;
+            r_state <= S_CLEAR;
+
+        elsif rising_edge(i_clk) then
+            if i_adv = '1' then
+                case r_state is
+                    when S_CLEAR  => r_state <= S_OP1;
+                    when S_OP1    => r_state <= S_OP2;
+                    when S_OP2    => r_state <= S_RESULT;
+                    when S_RESULT => r_state <= S_CLEAR;
+                end case;
+            end if;
         end if;
     end process;
 
-    
     process(r_state)
     begin
         case r_state is
-            when S0 =>
-                o_cycle <= "0001";
-            when S1 =>
-                o_cycle <= "0010";
-            when S2 =>
-                o_cycle <= "0100";
-            when S3 =>
-                o_cycle <= "1000";
+            when S_CLEAR  => o_cycle <= "0001";
+            when S_OP1    => o_cycle <= "0010";
+            when S_OP2    => o_cycle <= "0100";
+            when S_RESULT => o_cycle <= "1000";
         end case;
     end process;
 
