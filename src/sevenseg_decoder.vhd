@@ -37,5 +37,5 @@ begin
             "0000110" when x"E",
             "0001110" when x"F",
             "1111111" when others;
-//test this
+
 end Behavioral;
