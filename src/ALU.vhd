@@ -132,8 +132,7 @@ begin
 
         o_result <= result;
 
-        -- Flags order: Zero, Negative, Carry, Overflow
-        o_flags <= Z & N & C & V;
+        o_flags <= N & Z & C & V;
 
     end process;
 
